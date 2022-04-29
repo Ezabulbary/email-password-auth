@@ -1,6 +1,6 @@
 import './App.css';
 import app from './firebase.init';
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, updateProfile } from "firebase/auth";
 import { useState } from 'react';
 
 
@@ -10,8 +10,13 @@ function App() {
   const [registered, setRegistered] = useState(false);
   const [success, setSuccess] =useState('')
   const [error, setError] = useState('')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleNameBlur = event => {
+    setName(event.target.value)
+  }
 
   const handleEmailBlur = event => {
     setEmail(event.target.value)
@@ -40,7 +45,7 @@ function App() {
           console.log(user)
           setEmail('')
           setPassword('')
-          setSuccess('Successfull Signin')
+          setSuccess('Successful Sign in')
         })
         .catch(error => {
           setError(error.message)
@@ -51,10 +56,11 @@ function App() {
         .then(Result => {
           const user = Result.user
           console.log(user)
-          setEmail('')
-          setPassword('')
+          setEmail('');
+          setPassword('');
           verifyEmail();
-          setSuccess('Successfull Signup')
+          setUserName();
+          setSuccess('Successful Signup')
         })
         .catch(error => {
           setError(error.message)
@@ -77,6 +83,18 @@ function App() {
     })
   }
 
+  const setUserName = () => {
+    updateProfile(auth.currentUser, {
+      displayName: name
+    })
+    .then(() => {
+      console.log('Profile update')
+    })
+    .catch(() => {
+      setError(error.message)
+    })
+  }
+
   return (
     <div>
       <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 px-6 lg:px-8">
@@ -87,6 +105,13 @@ function App() {
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
           <div className="bg-white py-8 px-6 shadow rounded-lg sm:px-10">
             <form onSubmit={handleFormSubmit} className="mb-0 space-y-6" action="#" method="POST">
+              {!registered && <div>
+                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Your Name</label>
+                <div className="mt-1">
+                  <input onBlur={handleNameBlur} id="name" name="text" type="name" autoComplete="name" required className="w-full border border-gray-300 px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
+                </div>
+              </div>}
+              
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email address</label>
                 <div className="mt-1">
