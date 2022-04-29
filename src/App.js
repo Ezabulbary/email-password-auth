@@ -1,6 +1,6 @@
 import './App.css';
 import app from './firebase.init';
-import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { useState } from 'react';
 
 
@@ -8,6 +8,7 @@ const auth = getAuth(app);
 
 function App() {
   const [registered, setRegistered] = useState(false);
+  const [success, setSuccess] =useState('')
   const [error, setError] = useState('')
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,16 +26,21 @@ function App() {
   }
 
   const handleFormSubmit = event => {
-    if (!/^(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z0-9]{7,}$/.test(password)){
-      setError('Password should be at least 6 characters, one upper case, one lower case, one special character and one number')
-      return;
-    }
+    // if (!/^(?=.*\d)(?=.*[a-zA-Z])[a-zA-Z0-9]{7,}$/.test(password)){
+    //   setError('Password should be at least 6 characters, one upper case, one lower case, one special character and one number')
+    //   return;
+    // }
+    setError('')
+    setSuccess('')
 
     if (registered) {
       signInWithEmailAndPassword(auth, email, password)
         .then(Result => {
           const user = Result.user
           console.log(user)
+          setEmail('')
+          setPassword('')
+          setSuccess('Successfull Signin')
         })
         .catch(error => {
           setError(error.message)
@@ -47,6 +53,8 @@ function App() {
           console.log(user)
           setEmail('')
           setPassword('')
+          verifyEmail();
+          setSuccess('Successfull Signup')
         })
         .catch(error => {
           setError(error.message)
@@ -54,6 +62,21 @@ function App() {
     }
     event.preventDefault();
   }
+
+  const verifyEmail = () => {
+    sendEmailVerification(auth.currentUser)
+    .then(() => {
+      console.log('Sent Email verification')
+    })
+  }
+
+  const handleResetPassword = () => {
+    sendPasswordResetEmail(auth, email)
+    .then(() => {
+      console.log('Sent New Password')
+    })
+  }
+
   return (
     <div>
       <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 px-6 lg:px-8">
@@ -75,9 +98,9 @@ function App() {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
                 <div className="mt-1">
                   <input onBlur={handlePasswordBlur} id="" name="password" type="password" autoComplete="current-password" required className="w-full border border-gray-300 px-3 py-2 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500" />
-                  <div>
+                  {/* <div>
                     <p className='text-red-500'><small>{error}</small></p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
 
@@ -102,6 +125,14 @@ function App() {
 
               <div>
                 <p className='text-red-500'><small>{error}</small></p>
+              </div>
+
+              <div>
+                <p className='text-green-700'><small>{success}</small></p>
+              </div>
+
+              <div>
+                <button className='text-indigo-600 hover:text-indigo-300' onClick={handleResetPassword}>Reset Password?</button>
               </div>
 
               <div>
